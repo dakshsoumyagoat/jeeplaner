@@ -7,6 +7,15 @@ export type SyllabusState = Record<string, ChapterState>;
 
 export type PlannerState = Record<string, { chapterId: string; done?: boolean }[]>; // key: yyyy-mm-dd
 
+export type TimetableEntry = {
+  subject: string;
+  teacher?: string;
+  room?: string;
+  color: string;
+};
+
+export type SchoolTimetableState = Record<string, Record<string, TimetableEntry | null>>;
+
 export type DailyTarget = {
   text: string;
   done: boolean;
