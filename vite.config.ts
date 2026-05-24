@@ -8,7 +8,10 @@ import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
 // @cloudflare/vite-plugin builds from this — wrangler.jsonc main alone is insufficient.
+// For GitHub Pages: set base to '/jeeplaner/' if deploying to a project repository
+// For user/org pages or custom domain: set base to '/'
 export default defineConfig({
+  base: process.env.GITHUB_PAGES ? '/jeeplaner/' : '/',
   tanstackStart: {
     server: { entry: "server" },
   },
