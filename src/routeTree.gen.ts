@@ -9,8 +9,26 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SyllabusRouteImport } from './routes/syllabus'
+import { Route as PlannerRouteImport } from './routes/planner'
+import { Route as MocksRouteImport } from './routes/mocks'
 import { Route as IndexRouteImport } from './routes/index'
 
+const SyllabusRoute = SyllabusRouteImport.update({
+  id: '/syllabus',
+  path: '/syllabus',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlannerRoute = PlannerRouteImport.update({
+  id: '/planner',
+  path: '/planner',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MocksRoute = MocksRouteImport.update({
+  id: '/mocks',
+  path: '/mocks',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -19,28 +37,61 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/mocks': typeof MocksRoute
+  '/planner': typeof PlannerRoute
+  '/syllabus': typeof SyllabusRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/mocks': typeof MocksRoute
+  '/planner': typeof PlannerRoute
+  '/syllabus': typeof SyllabusRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/mocks': typeof MocksRoute
+  '/planner': typeof PlannerRoute
+  '/syllabus': typeof SyllabusRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/mocks' | '/planner' | '/syllabus'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/mocks' | '/planner' | '/syllabus'
+  id: '__root__' | '/' | '/mocks' | '/planner' | '/syllabus'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  MocksRoute: typeof MocksRoute
+  PlannerRoute: typeof PlannerRoute
+  SyllabusRoute: typeof SyllabusRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/syllabus': {
+      id: '/syllabus'
+      path: '/syllabus'
+      fullPath: '/syllabus'
+      preLoaderRoute: typeof SyllabusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/planner': {
+      id: '/planner'
+      path: '/planner'
+      fullPath: '/planner'
+      preLoaderRoute: typeof PlannerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mocks': {
+      id: '/mocks'
+      path: '/mocks'
+      fullPath: '/mocks'
+      preLoaderRoute: typeof MocksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -53,6 +104,9 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  MocksRoute: MocksRoute,
+  PlannerRoute: PlannerRoute,
+  SyllabusRoute: SyllabusRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
