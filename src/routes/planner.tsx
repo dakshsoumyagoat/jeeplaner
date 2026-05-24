@@ -13,6 +13,7 @@ import { usePersisted } from "@/lib/storage";
 import { SYLLABUS } from "@/data/syllabus";
 import { todayKey } from "@/lib/progress";
 import type { PlannerState } from "@/lib/types";
+import { SchoolTimetable } from "@/components/timetable/SchoolTimetable";
 import { addDays, startOfWeek, format } from "date-fns";
 import { ChevronLeft, ChevronRight, Plus, X, RotateCcw, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -115,6 +116,8 @@ function PlannerPage() {
           </Button>
         </div>
       </header>
+
+      <SchoolTimetable />
 
       <div className="grid grid-cols-1 gap-3 md:grid-cols-7">
         {days.map((d) => {
