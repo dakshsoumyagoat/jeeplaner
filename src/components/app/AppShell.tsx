@@ -1,11 +1,12 @@
 import { Link, Outlet, useRouterState } from "@tanstack/react-router";
-import { Home, ListChecks, CalendarDays, LineChart } from "lucide-react";
+import { Home, ListChecks, CalendarDays, LineChart, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV = [
   { to: "/", label: "Today", icon: Home },
   { to: "/syllabus", label: "Syllabus", icon: ListChecks },
   { to: "/planner", label: "Planner", icon: CalendarDays },
+  { to: "/schedule", label: "Schedule", icon: Clock },
   { to: "/mocks", label: "Mocks", icon: LineChart },
 ] as const;
 
@@ -51,7 +52,7 @@ export function AppShell() {
       </main>
 
       <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border/60 bg-background/95 backdrop-blur md:hidden">
-        <ul className="mx-auto grid max-w-5xl grid-cols-4">
+        <ul className="mx-auto grid max-w-5xl grid-cols-5">
           {NAV.map((n) => {
             const active = path === n.to;
             const Icon = n.icon;
