@@ -373,3 +373,179 @@ function ChapterPicker({ onPick }: { onPick: (id: string) => void }) {
     </div>
   );
 }
+
+function AddTaskForm({
+  defaultDate,
+  onSubmit,
+}: {
+  defaultDate: string;
+  onSubmit: (chapterId: string, scheduled: string, due?: string) => void;
+}) {
+  const [chapterId, setChapterId] = useState<string | null>(null);
+  const [scheduled, setScheduled] = useState<Date>(new Date(defaultDate + "T00:00:00"));
+  const [due, setDue] = useState<Date | undefined>(undefined);
+
+  const chapter = chapterId ? CHAPTER_MAP.get(chapterId) : null;
+
+  return (
+    <div className="space-y-5">
+      <div className="space-y-2">
+        <div className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+          Chapter
+        </div>
+        {chapter ? (
+          <div className="flex items-center justify-between rounded-md border border-border/60 p-2 text-sm">
+            <div>
+              <div className="font-medium">{chapter.name}</div>
+              <div className="text-xs text-muted-foreground">{chapter.subject}</div>
+            </div>
+            <Button size="sm" variant="ghost" onClick={() => setChapterId(null)}>
+              Change
+            </Button>
+          </div>
+        ) : (
+          <ChapterPicker onPick={setChapterId} />
+        )}
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div className="space-y-2">
+          <div className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+            Scheduled date
+          </div>
+          <DatePopover value={scheduled} onChange={(d) => d && setScheduled(d)} placeholder="Pick a date" />
+        </div>
+        <div className="space-y-2">
+          <div className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+            Completion date <span className="text-muted-foreground/70">(optional)</span>
+          </div>
+          <DatePopover value={due} onChange={setDue} placeholder="No due date" clearable />
+        </div>
+      </div>
+
+      <div className="flex justify-end">
+        <Button
+          disabled={!chapterId}
+          onClick={() =>
+            chapterId &&
+            onSubmit(
+              chapterId,
+              format(scheduled, "yyyy-MM-dd"),
+              due ? format(due, "yyyy-MM-dd") : undefined,
+            )
+          }
+        >
+          Add task
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function DatePopover({
+  value,
+  onChange,
+  placeholder,
+  clearable,
+}: {
+  value?: Date;
+  onChange: (d: Date | undefined) => void;
+  placeholder: string;
+  clearable?: boolean;
+}) {
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          className={cn(
+            "w-full justify-start text-left font-normal",
+            !value && "text-muted-foreground",
+          )}
+        >
+          <CalendarIcon className="mr-2 h-4 w-4" />
+          {value ? format(value, "PPP") : <span>{placeholder}</span>}
+          {clearable && value && (
+            <span
+              role="button"
+              tabIndex={0}
+              onClick={(e) => {
+                e.stopPropagation();
+                onChange(undefined);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.stopPropagation();
+                  onChange(undefined);
+                }
+              }}
+              className="ml-auto text-xs text-muted-foreground hover:text-destructive"
+            >
+              Clear
+            </span>
+          )}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-auto p-0" align="start">
+        <Calendar
+          mode="single"
+          selected={value}
+          onSelect={onChange}
+          initialFocus
+          className={cn("p-3 pointer-events-auto")}
+        />
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+function DueDatePicker({
+  value,
+  onChange,
+  overdue,
+}: {
+  value?: string;
+  onChange: (due: string | undefined) => void;
+  overdue: boolean;
+}) {
+  const date = value ? new Date(value + "T00:00:00") : undefined;
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button
+          className={cn(
+            "mt-1 flex items-center gap-1 text-[10px] transition-colors",
+            value
+              ? overdue
+                ? "text-destructive"
+                : "text-muted-foreground hover:text-foreground"
+              : "text-muted-foreground/60 opacity-0 group-hover:opacity-100",
+          )}
+        >
+          {overdue ? (
+            <AlertCircle className="h-3 w-3" />
+          ) : (
+            <CalendarIcon className="h-3 w-3" />
+          )}
+          {value ? `Due ${format(date!, "MMM d")}` : "Set due date"}
+        </button>
+      </PopoverTrigger>
+      <PopoverContent className="w-auto p-0" align="start">
+        <Calendar
+          mode="single"
+          selected={date}
+          onSelect={(d) => onChange(d ? format(d, "yyyy-MM-dd") : undefined)}
+          initialFocus
+          className={cn("p-3 pointer-events-auto")}
+        />
+        {value && (
+          <div className="border-t border-border/60 p-2">
+            <Button size="sm" variant="ghost" className="w-full" onClick={() => onChange(undefined)}>
+              Clear due date
+            </Button>
+          </div>
+        )}
+      </PopoverContent>
+    </Popover>
+  );
+}
