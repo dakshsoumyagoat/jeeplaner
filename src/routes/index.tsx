@@ -47,9 +47,8 @@ function Dashboard() {
   );
 
   const overall = useMemo(() => {
-    const t = progress.physics.total + progress.chemistry.total + progress.math.total;
-    const d = progress.physics.done + progress.chemistry.done + progress.math.done;
-    return t ? Math.round((d / t) * 100) : 0;
+    const pcts = [progress.physics.pct, progress.chemistry.pct, progress.math.pct];
+    return Math.round(pcts.reduce((a, b) => a + b, 0) / pcts.length);
   }, [progress]);
 
   const setTodayTarget = (text: string) => {

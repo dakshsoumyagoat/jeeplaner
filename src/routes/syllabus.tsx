@@ -11,9 +11,10 @@ import {
 import { SYLLABUS } from "@/data/syllabus";
 import { usePersisted } from "@/lib/storage";
 import type { SyllabusState } from "@/lib/types";
-import { subjectProgress } from "@/lib/progress";
+import { subjectProgress, chapterAvg } from "@/lib/progress";
 import { Search } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Slider } from "@/components/ui/slider";
 
 export const Route = createFileRoute("/syllabus")({
   head: () => ({
@@ -25,7 +26,7 @@ export const Route = createFileRoute("/syllabus")({
   component: SyllabusPage,
 });
 
-const TOGGLES = [
+const TRACKS = [
   { key: "theory", label: "Theory" },
   { key: "practice", label: "Practice" },
   { key: "revision", label: "Revision" },
@@ -53,10 +54,14 @@ function SyllabusPage() {
     })).filter((s) => s.units.length);
   }, [query]);
 
-  const toggle = (chapterId: string, key: "theory" | "practice" | "revision") => {
+  const setTrack = (
+    chapterId: string,
+    key: "theory" | "practice" | "revision",
+    value: number,
+  ) => {
     setState((prev) => ({
       ...prev,
-      [chapterId]: { ...prev[chapterId], [key]: !prev[chapterId]?.[key] },
+      [chapterId]: { ...prev[chapterId], [key]: value },
     }));
   };
 
@@ -65,7 +70,7 @@ function SyllabusPage() {
       <header>
         <h1 className="text-3xl font-semibold md:text-4xl">Syllabus</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Tap a badge to mark progress. A chapter counts as done when all three badges are filled.
+          Drag the sliders to track theory, practice, and revision. A chapter is mastered when all three reach 100%.
         </p>
       </header>
 
@@ -114,47 +119,52 @@ function SyllabusPage() {
                       <ul className="space-y-2">
                         {unit.chapters.map((ch) => {
                           const cs = state[ch.id] || {};
-                          const allDone = cs.theory && cs.practice && cs.revision;
+                          const avg = chapterAvg(cs);
+                          const allDone = avg >= 100;
                           return (
                             <li
                               key={ch.id}
                               className={cn(
-                                "flex flex-col gap-2 rounded-lg border border-border/40 p-3 transition-colors sm:flex-row sm:items-center sm:justify-between",
+                                "flex flex-col gap-3 rounded-lg border border-border/40 p-3 transition-colors",
                                 allDone && "border-transparent bg-accent/40",
                               )}
                             >
-                              <div className="text-sm">
-                                {ch.name}
-                                {allDone && (
-                                  <span
-                                    className="ml-2 text-[10px] uppercase tracking-widest"
-                                    style={{ color: subject.accent }}
-                                  >
-                                    Mastered
-                                  </span>
-                                )}
-                              </div>
-                              <div className="flex flex-wrap gap-1.5">
-                                {TOGGLES.map((t) => {
-                                  const on = !!cs[t.key];
-                                  return (
-                                    <button
-                                      key={t.key}
-                                      onClick={() => toggle(ch.id, t.key)}
-                                      className={cn(
-                                        "rounded-full border px-2.5 py-1 text-[11px] font-medium transition-all active:scale-95",
-                                        on
-                                          ? "border-transparent text-background"
-                                          : "border-border/60 text-muted-foreground hover:text-foreground",
-                                      )}
-                                      style={
-                                        on
-                                          ? { background: subject.accent }
-                                          : undefined
-                                      }
+                              <div className="flex items-baseline justify-between gap-2">
+                                <div className="text-sm font-medium">
+                                  {ch.name}
+                                  {allDone && (
+                                    <span
+                                      className="ml-2 text-[10px] uppercase tracking-widest"
+                                      style={{ color: subject.accent }}
                                     >
-                                      {t.label}
-                                    </button>
+                                      Mastered
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="text-[11px] tabular-nums text-muted-foreground">
+                                  {avg}%
+                                </div>
+                              </div>
+                              <div className="grid gap-2 sm:grid-cols-3">
+                                {TRACKS.map((t) => {
+                                  const val = Number(cs[t.key]) || 0;
+                                  return (
+                                    <div key={t.key} className="space-y-1">
+                                      <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                                        <span>{t.label}</span>
+                                        <span className="tabular-nums" style={{ color: val > 0 ? subject.accent : undefined }}>
+                                          {val}%
+                                        </span>
+                                      </div>
+                                      <Slider
+                                        value={[val]}
+                                        min={0}
+                                        max={100}
+                                        step={5}
+                                        onValueChange={(v) => setTrack(ch.id, t.key, v[0] ?? 0)}
+                                        style={{ ['--primary' as any]: subject.accent }}
+                                      />
+                                    </div>
                                   );
                                 })}
                               </div>
