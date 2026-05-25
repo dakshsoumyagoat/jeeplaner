@@ -7,6 +7,7 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
+import { useEffect } from "react";
 
 import appCss from "../styles.css?url";
 import { AppShell } from "@/components/app/AppShell";
@@ -86,7 +87,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: appCss,
       },
-      { rel: "manifest", href: "/manifest.webmanifest" },
       { rel: "apple-touch-icon", href: "/icon-192.png" },
       {
         rel: "stylesheet",
@@ -116,6 +116,29 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+
+  // Inject the PWA manifest only outside the Lovable preview iframe.
+  // The preview URL is auth-gated by a query token that the browser strips
+  // when fetching the manifest, producing a noisy 401 in DevTools. The
+  // published site renders without an iframe, so installability is preserved.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    let inIframe = false;
+    try {
+      inIframe = window.self !== window.top;
+    } catch {
+      inIframe = true;
+    }
+    const host = window.location.hostname;
+    const isPreview =
+      host.includes("lovableproject.com") || host.includes("lovable.app");
+    if (inIframe || isPreview) return;
+    if (document.querySelector('link[rel="manifest"]')) return;
+    const link = document.createElement("link");
+    link.rel = "manifest";
+    link.href = "/manifest.webmanifest";
+    document.head.appendChild(link);
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
