@@ -9,12 +9,18 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
 import { usePersisted } from "@/lib/storage";
 import { SYLLABUS } from "@/data/syllabus";
 import { todayKey } from "@/lib/progress";
 import type { PlannerState } from "@/lib/types";
 import { addDays, startOfWeek, format } from "date-fns";
-import { ChevronLeft, ChevronRight, Plus, X, RotateCcw, CheckCircle2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, X, RotateCcw, CheckCircle2, CalendarIcon, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/planner")({
@@ -39,6 +45,8 @@ function PlannerPage() {
   const [planner, setPlanner] = usePersisted<PlannerState>("planner-state", {});
   const [weekOffset, setWeekOffset] = useState(0);
   const [assignFor, setAssignFor] = useState<string | null>(null);
+  const [addTaskOpen, setAddTaskOpen] = useState(false);
+  const [addBacklogOpen, setAddBacklogOpen] = useState(false);
 
   const weekStart = useMemo(
     () => addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), weekOffset * 7),
@@ -67,6 +75,31 @@ function PlannerPage() {
       if (list.some((e) => e.chapterId === chapterId)) return prev;
       return { ...prev, [date]: [...list, { chapterId, done: false }] };
     });
+  };
+
+  const assignFull = (date: string, chapterId: string, due?: string) => {
+    setPlanner((prev) => {
+      const list = prev[date] || [];
+      if (list.some((e) => e.chapterId === chapterId)) {
+        // update due date if already present
+        return {
+          ...prev,
+          [date]: list.map((e) =>
+            e.chapterId === chapterId ? { ...e, due } : e,
+          ),
+        };
+      }
+      return { ...prev, [date]: [...list, { chapterId, done: false, due }] };
+    });
+  };
+
+  const setDue = (date: string, chapterId: string, due?: string) => {
+    setPlanner((prev) => ({
+      ...prev,
+      [date]: (prev[date] || []).map((e) =>
+        e.chapterId === chapterId ? { ...e, due } : e,
+      ),
+    }));
   };
 
   const remove = (date: string, chapterId: string) => {
@@ -103,16 +136,37 @@ function PlannerPage() {
             {format(weekStart, "MMM d")} – {format(addDays(weekStart, 6), "MMM d, yyyy")}
           </p>
         </div>
-        <div className="flex items-center gap-1">
-          <Button variant="outline" size="icon" onClick={() => setWeekOffset((w) => w - 1)}>
-            <ChevronLeft />
-          </Button>
-          <Button variant="outline" size="sm" onClick={() => setWeekOffset(0)}>
-            Today
-          </Button>
-          <Button variant="outline" size="icon" onClick={() => setWeekOffset((w) => w + 1)}>
-            <ChevronRight />
-          </Button>
+        <div className="flex items-center gap-2">
+          <Dialog open={addTaskOpen} onOpenChange={setAddTaskOpen}>
+            <DialogTrigger asChild>
+              <Button size="sm">
+                <Plus className="mr-1 h-4 w-4" /> Add task
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-h-[85vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Add task to planner</DialogTitle>
+              </DialogHeader>
+              <AddTaskForm
+                defaultDate={today}
+                onSubmit={(chapterId, scheduled, due) => {
+                  assignFull(scheduled, chapterId, due);
+                  setAddTaskOpen(false);
+                }}
+              />
+            </DialogContent>
+          </Dialog>
+          <div className="flex items-center gap-1">
+            <Button variant="outline" size="icon" onClick={() => setWeekOffset((w) => w - 1)}>
+              <ChevronLeft />
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => setWeekOffset(0)}>
+              Today
+            </Button>
+            <Button variant="outline" size="icon" onClick={() => setWeekOffset((w) => w + 1)}>
+              <ChevronRight />
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -168,6 +222,7 @@ function PlannerPage() {
                   const ch = CHAPTER_MAP.get(e.chapterId);
                   if (!ch) return null;
                   const isBacklog = isPast && !e.done;
+                  const dueOverdue = e.due && !e.done && e.due < today;
                   return (
                     <li
                       key={e.chapterId}
@@ -190,6 +245,11 @@ function PlannerPage() {
                       <div className="flex-1 leading-tight">
                         <div className={e.done ? "line-through" : ""}>{ch.name}</div>
                         <div className="text-[10px] text-muted-foreground">{ch.subject}</div>
+                        <DueDatePicker
+                          value={e.due}
+                          overdue={!!dueOverdue}
+                          onChange={(due) => setDue(key, e.chapterId, due)}
+                        />
                       </div>
                       <button
                         onClick={() => remove(key, e.chapterId)}
@@ -210,7 +270,29 @@ function PlannerPage() {
       <Card className="p-5">
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-lg font-semibold">Backlog</h2>
-          <span className="text-xs text-muted-foreground">{backlog.length} pending</span>
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-muted-foreground">{backlog.length} pending</span>
+            <Dialog open={addBacklogOpen} onOpenChange={setAddBacklogOpen}>
+              <DialogTrigger asChild>
+                <Button size="sm" variant="outline">
+                  <Plus className="mr-1 h-3.5 w-3.5" /> Add to backlog
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-h-[80vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Add to backlog</DialogTitle>
+                </DialogHeader>
+                <ChapterPicker
+                  onPick={(id) => {
+                    // Park as undone on yesterday so it appears in backlog list.
+                    const y = format(addDays(new Date(), -1), "yyyy-MM-dd");
+                    assign(y, id);
+                    setAddBacklogOpen(false);
+                  }}
+                />
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
         {backlog.length === 0 ? (
           <p className="text-sm text-muted-foreground">All caught up. Strong work.</p>
