@@ -81,6 +81,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:title", content: "JEE Scholar Planner" },
       { property: "og:description", content: "Plan your JEE prep, track syllabus, and analyze mock tests." },
       { property: "og:type", content: "website" },
+      { name: "twitter:title", content: "JEE Scholar Planner" },
+      { name: "twitter:description", content: "Plan your JEE prep, track syllabus, and analyze mock tests." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/d936b241-23e0-4ada-9f8e-10ee92c48a15/id-preview-a16a1a5c--8f53e3ed-5956-4813-a899-87e2324282a2.lovable.app-1779710911221.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/d936b241-23e0-4ada-9f8e-10ee92c48a15/id-preview-a16a1a5c--8f53e3ed-5956-4813-a899-87e2324282a2.lovable.app-1779710911221.png" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
       {
