@@ -1,106 +1,30 @@
+## What I found
 
-# JEE Scholar Planner — Build Plan
+I loaded every route in the preview — Today, Syllabus, Planner, Mocks all render correctly. The app is functional. The only red entry in the browser console is:
 
-A dark-mode-first, mobile-optimized study companion for JEE aspirants with offline-friendly local persistence, syllabus tracking, planner, and mock analytics.
-
-## Note on "PWA" / offline
-
-A full service-worker PWA does not work reliably inside the Lovable editor preview (service workers cache stale builds and break the preview iframe). I'll ship the app as **installable** via a web app manifest + icons + standalone display + theme colors — users can "Add to Home Screen" on mobile/desktop. All data lives in **IndexedDB** (via a tiny wrapper), so the app remains fully usable after first load even without network for already-loaded routes. If you specifically need true offline (works with no network on a cold start), we can add a guarded service worker later — flag this and I'll wire it in with the preview-safe pattern.
-
-## Pages & routes
-
-```text
-/              Dashboard (Today's target, 3 syllabus rings, streak)
-/syllabus      Interactive checklist (accordion + search + 3 toggles per chapter)
-/planner       Weekly calendar + Backlog Manager
-/mocks         Mock test form + line chart + strengths/weaknesses
+```
+Failed to load resource: 401 — /manifest.webmanifest
+Manifest fetch ... failed, code 401
 ```
 
-Bottom navigation bar (mobile) + top nav (desktop) — same 4 destinations.
+This is the only real "error" surfaced by the app. It happens because the Lovable preview URL is auth-gated (`?__lovable_token=...`), so the browser's manifest fetch — which strips the query string — gets rejected by the proxy. It's harmless in the published build, but it looks like a broken app in DevTools and triggers the "visible error" you saw.
 
-## Features per page
+The other console noise (`postMessage` warnings from `cdn.gpteng.co/lovable.js`) comes from the Lovable editor harness, not your code. Nothing to fix there.
 
-**Dashboard**
-- "Today's Target" card with mark-complete toggle (drives streak).
-- 3 circular progress rings (Physics / Chemistry / Math) computed from chapter completion (chapter = done when all 3 toggles checked).
-- Streak counter (consecutive days with ≥1 completed target).
+## Plan
 
-**Syllabus**
-- Seeded JEE syllabus: Subject → Unit → Chapter (curated standard list).
-- Per chapter: 3 toggle badges — Theory / Practice / Revision.
-- Search bar filters chapters live.
-- Accent colors: Physics neon-blue, Chemistry emerald, Math purple.
+1. **Silence the manifest 401 in the preview iframe.** Make the `<link rel="manifest">` tag conditional in `src/routes/__root.tsx` so it's only emitted when the app is NOT running inside the Lovable preview iframe. Installable PWA behavior on the published site is preserved; the preview console goes clean.
 
-**Planner**
-- Weekly view (7-day grid, navigable by week).
-- Click a day to assign chapters from a picker (drag-and-drop on desktop, tap-to-add on mobile — simpler and more reliable on touch).
-- Backlog section: any past-day assignment not marked done shows red with "Reschedule" action.
+   Approach: detect `window.self !== window.top` (or a `lovableproject.com` hostname) on the client and inject the manifest link via a small client-only effect rather than statically in `head().links`.
 
-**Mocks**
-- Form: date, total, P/C/M scores, negatives, plus tagged error types (Silly / Conceptual / Time / Unattempted).
-- Line chart of total + per-subject trend (Recharts).
-- Strengths vs Weaknesses: aggregated error-type bar.
+2. **Quick health sweep** — read `src/routes/syllabus.tsx`, `planner.tsx`, `mocks.tsx`, `src/components/timetable/SchoolTimetable.tsx` and fix anything obviously broken (unreachable handlers, stale `usePersisted` keys, missing imports). I won't change behavior or design — only fix bugs.
 
-## Design system
+3. **Verify** by re-loading each route in the browser tool and re-reading the console; the manifest 401 should be gone and no new errors should appear.
 
-- Dark-first theme in `src/styles.css` using oklch tokens.
-  - Background: deep slate/near-black; surfaces: layered slate.
-  - Accents: `--physics` (neon blue), `--chemistry` (emerald), `--math` (purple).
-- Typography: Space Grotesk (display) + Inter (body) via Google Fonts.
-- Micro-interactions: tw-animate-css for accordion expand, check-toggle pop, tab transitions.
-- shadcn primitives: accordion, card, progress, tabs, dialog, input, button, badge, sonner.
+## Out of scope
 
-## Data layer
+- No design changes.
+- No new features (still no real service worker — manifest-only stays as-is).
+- No backend / Lovable Cloud changes.
 
-- IndexedDB via a small `idb-keyval`-style wrapper in `src/lib/storage.ts`.
-- Stores: `syllabus-state`, `daily-targets`, `streak`, `planner`, `mocks`.
-- React Query for in-memory cache; persisted writes on mutation.
-- Seed syllabus shipped as a static TS module.
-
-## File plan
-
-```text
-src/
-  routes/
-    __root.tsx           (add fonts, meta, manifest link, AppShell with bottom nav)
-    index.tsx            (Dashboard)
-    syllabus.tsx
-    planner.tsx
-    mocks.tsx
-  components/
-    app-shell.tsx        (top + bottom nav)
-    progress-ring.tsx
-    today-target-card.tsx
-    streak-card.tsx
-    syllabus-tree.tsx
-    planner-week.tsx
-    backlog-list.tsx
-    mock-form.tsx
-    mock-chart.tsx
-    error-breakdown.tsx
-  data/
-    syllabus.ts          (seed JEE syllabus)
-  lib/
-    storage.ts           (IndexedDB wrapper)
-    progress.ts          (derive % + streak)
-  styles.css             (dark-first tokens, subject accents)
-public/
-  manifest.webmanifest
-  icon-192.png
-  icon-512.png
-  apple-touch-icon.png
-```
-
-## Dependencies to add
-
-- `recharts` (charts)
-- `date-fns` (week math)
-- `idb-keyval` (tiny IndexedDB wrapper)
-
-## Out of scope (unless you confirm)
-
-- Real service worker / true cold-start offline.
-- Cloud sync / auth (everything is local-only).
-- Drag-and-drop library on mobile — using tap-to-assign instead.
-
-Ready to build on approval.
+If the blank screen you saw is actually something different (a specific click, the published site, or after install-to-home-screen), tell me which and I'll retarget — but based on what I can observe, the manifest 401 is the only real signal.
