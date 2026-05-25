@@ -5,7 +5,13 @@ export type ChapterState = {
 };
 export type SyllabusState = Record<string, ChapterState>;
 
-export type PlannerState = Record<string, { chapterId: string; done?: boolean }[]>; // key: yyyy-mm-dd
+export type PlannerEntry = {
+  chapterId: string;
+  done?: boolean;
+  /** Optional target completion date (yyyy-mm-dd) */
+  due?: string;
+};
+export type PlannerState = Record<string, PlannerEntry[]>; // key: yyyy-mm-dd (scheduled date)
 
 export type TimetableEntry = {
   subject: string;
