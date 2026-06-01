@@ -490,7 +490,7 @@ function StatsView({ sessions }: { sessions: StudySession[] }) {
                   border: "1px solid var(--border)",
                   borderRadius: 8,
                 }}
-                formatter={(v: number) => `${v} min`}
+                formatter={(v) => `${v as number} min`}
               />
               <Legend />
             </PieChart>
