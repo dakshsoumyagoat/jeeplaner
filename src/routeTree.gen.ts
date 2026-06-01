@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SyllabusRouteImport } from './routes/syllabus'
+import { Route as StudyRouteImport } from './routes/study'
 import { Route as ScheduleRouteImport } from './routes/schedule'
 import { Route as PlannerRouteImport } from './routes/planner'
 import { Route as MocksRouteImport } from './routes/mocks'
@@ -18,6 +19,11 @@ import { Route as IndexRouteImport } from './routes/index'
 const SyllabusRoute = SyllabusRouteImport.update({
   id: '/syllabus',
   path: '/syllabus',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StudyRoute = StudyRouteImport.update({
+  id: '/study',
+  path: '/study',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ScheduleRoute = ScheduleRouteImport.update({
@@ -46,6 +52,7 @@ export interface FileRoutesByFullPath {
   '/mocks': typeof MocksRoute
   '/planner': typeof PlannerRoute
   '/schedule': typeof ScheduleRoute
+  '/study': typeof StudyRoute
   '/syllabus': typeof SyllabusRoute
 }
 export interface FileRoutesByTo {
@@ -53,6 +60,7 @@ export interface FileRoutesByTo {
   '/mocks': typeof MocksRoute
   '/planner': typeof PlannerRoute
   '/schedule': typeof ScheduleRoute
+  '/study': typeof StudyRoute
   '/syllabus': typeof SyllabusRoute
 }
 export interface FileRoutesById {
@@ -61,14 +69,22 @@ export interface FileRoutesById {
   '/mocks': typeof MocksRoute
   '/planner': typeof PlannerRoute
   '/schedule': typeof ScheduleRoute
+  '/study': typeof StudyRoute
   '/syllabus': typeof SyllabusRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/mocks' | '/planner' | '/schedule' | '/syllabus'
+  fullPaths: '/' | '/mocks' | '/planner' | '/schedule' | '/study' | '/syllabus'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/mocks' | '/planner' | '/schedule' | '/syllabus'
-  id: '__root__' | '/' | '/mocks' | '/planner' | '/schedule' | '/syllabus'
+  to: '/' | '/mocks' | '/planner' | '/schedule' | '/study' | '/syllabus'
+  id:
+    | '__root__'
+    | '/'
+    | '/mocks'
+    | '/planner'
+    | '/schedule'
+    | '/study'
+    | '/syllabus'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -76,6 +92,7 @@ export interface RootRouteChildren {
   MocksRoute: typeof MocksRoute
   PlannerRoute: typeof PlannerRoute
   ScheduleRoute: typeof ScheduleRoute
+  StudyRoute: typeof StudyRoute
   SyllabusRoute: typeof SyllabusRoute
 }
 
@@ -86,6 +103,13 @@ declare module '@tanstack/react-router' {
       path: '/syllabus'
       fullPath: '/syllabus'
       preLoaderRoute: typeof SyllabusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/study': {
+      id: '/study'
+      path: '/study'
+      fullPath: '/study'
+      preLoaderRoute: typeof StudyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/schedule': {
@@ -124,6 +148,7 @@ const rootRouteChildren: RootRouteChildren = {
   MocksRoute: MocksRoute,
   PlannerRoute: PlannerRoute,
   ScheduleRoute: ScheduleRoute,
+  StudyRoute: StudyRoute,
   SyllabusRoute: SyllabusRoute,
 }
 export const routeTree = rootRouteImport
