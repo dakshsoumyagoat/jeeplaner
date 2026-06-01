@@ -1,5 +1,5 @@
 import { Link, Outlet, useRouterState } from "@tanstack/react-router";
-import { Home, ListChecks, CalendarDays, LineChart, Clock } from "lucide-react";
+import { Home, ListChecks, CalendarDays, LineChart, Clock, Timer } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV = [
@@ -7,6 +7,7 @@ const NAV = [
   { to: "/syllabus", label: "Syllabus", icon: ListChecks },
   { to: "/planner", label: "Planner", icon: CalendarDays },
   { to: "/schedule", label: "Schedule", icon: Clock },
+  { to: "/study", label: "Study", icon: Timer },
   { to: "/mocks", label: "Mocks", icon: LineChart },
 ] as const;
 
@@ -15,7 +16,7 @@ export function AppShell() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur">
+      <header className="sticky top-0 z-40 border-b border-border/60 bg-background/60 backdrop-blur-xl supports-[backdrop-filter]:bg-background/40">
         <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
           <Link to="/" className="flex items-center gap-2">
             <div className="grid h-8 w-8 place-items-center rounded-lg bg-gradient-to-br from-primary to-[var(--math)] font-display text-sm font-bold text-primary-foreground">
@@ -52,7 +53,7 @@ export function AppShell() {
       </main>
 
       <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border/60 bg-background/95 backdrop-blur md:hidden">
-        <ul className="mx-auto grid max-w-5xl grid-cols-5">
+        <ul className="mx-auto grid max-w-5xl grid-cols-6">
           {NAV.map((n) => {
             const active = path === n.to;
             const Icon = n.icon;
