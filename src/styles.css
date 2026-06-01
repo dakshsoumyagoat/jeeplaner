@@ -42,34 +42,34 @@
 }
 
 :root {
-  --radius: 0.75rem;
-  --background: oklch(0.17 0.022 265);
-  --foreground: oklch(0.97 0.01 250);
-  --card: oklch(0.22 0.028 265);
-  --card-foreground: oklch(0.97 0.01 250);
-  --popover: oklch(0.22 0.028 265);
-  --popover-foreground: oklch(0.97 0.01 250);
-  --primary: oklch(0.75 0.18 245);
-  --primary-foreground: oklch(0.16 0.02 265);
-  --secondary: oklch(0.28 0.03 265);
-  --secondary-foreground: oklch(0.97 0.01 250);
-  --muted: oklch(0.26 0.025 265);
-  --muted-foreground: oklch(0.72 0.03 260);
-  --accent: oklch(0.32 0.05 265);
-  --accent-foreground: oklch(0.97 0.01 250);
-  --destructive: oklch(0.65 0.24 25);
-  --destructive-foreground: oklch(0.98 0.01 250);
-  --border: oklch(0.3 0.03 265);
-  --input: oklch(0.3 0.03 265);
-  --ring: oklch(0.75 0.18 245);
-  --physics: oklch(0.75 0.2 240);
-  --chemistry: oklch(0.78 0.17 155);
-  --math: oklch(0.72 0.2 305);
-  --chart-1: oklch(0.75 0.2 240);
-  --chart-2: oklch(0.78 0.17 155);
-  --chart-3: oklch(0.72 0.2 305);
-  --chart-4: oklch(0.8 0.18 80);
-  --chart-5: oklch(0.7 0.2 20);
+  --radius: 0.875rem;
+  --background: #0F1117;
+  --foreground: #F8FAFC;
+  --card: #181C24;
+  --card-foreground: #F8FAFC;
+  --popover: #181C24;
+  --popover-foreground: #F8FAFC;
+  --primary: #7C5CFF;
+  --primary-foreground: #F8FAFC;
+  --secondary: #222834;
+  --secondary-foreground: #F8FAFC;
+  --muted: #222834;
+  --muted-foreground: #94A3B8;
+  --accent: #222834;
+  --accent-foreground: #F8FAFC;
+  --destructive: #EF4444;
+  --destructive-foreground: #F8FAFC;
+  --border: #2A3242;
+  --input: #2A3242;
+  --ring: #7C5CFF;
+  --physics: #60A5FA;
+  --chemistry: #22C55E;
+  --math: #7C5CFF;
+  --chart-1: #7C5CFF;
+  --chart-2: #22C55E;
+  --chart-3: #60A5FA;
+  --chart-4: #F59E0B;
+  --chart-5: #EF4444;
 }
 
 @layer base {
@@ -82,18 +82,15 @@
     font-family: var(--font-sans);
   }
   h1, h2, h3, h4 {
-    font-family: var(--font-display);
-    letter-spacing: -0.02em;
+    font-family: var(--font-sans);
+    letter-spacing: -0.015em;
+    font-weight: 600;
   }
 }
 
 @layer components {
   .glass-panel {
-    background: color-mix(in oklab, var(--card) 70%, transparent);
-    border: 1px solid color-mix(in oklab, var(--border) 80%, transparent);
-    backdrop-filter: blur(18px) saturate(140%);
-    box-shadow:
-      0 1px 0 0 color-mix(in oklab, white 5%, transparent) inset,
-      0 20px 50px -25px color-mix(in oklab, black 70%, transparent);
+    background: var(--card);
+    border: 1px solid var(--border);
   }
 }
