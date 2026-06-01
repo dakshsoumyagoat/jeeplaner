@@ -86,3 +86,14 @@
     letter-spacing: -0.02em;
   }
 }
+
+@layer components {
+  .glass-panel {
+    background: color-mix(in oklab, var(--card) 70%, transparent);
+    border: 1px solid color-mix(in oklab, var(--border) 80%, transparent);
+    backdrop-filter: blur(18px) saturate(140%);
+    box-shadow:
+      0 1px 0 0 color-mix(in oklab, white 5%, transparent) inset,
+      0 20px 50px -25px color-mix(in oklab, black 70%, transparent);
+  }
+}
