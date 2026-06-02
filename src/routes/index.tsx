@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,8 +8,17 @@ import { usePersisted } from "@/lib/storage";
 import { SYLLABUS } from "@/data/syllabus";
 import { subjectProgress, todayKey, diffDays } from "@/lib/progress";
 import type { DailyTarget, StreakState, SyllabusState } from "@/lib/types";
-import { Flame, CheckCircle2, Circle, Sparkles } from "lucide-react";
+import { Flame, CheckCircle2, Circle, Sparkles, Play, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
+
+// JEE Main 2027 — first session typically late January
+const JEE_TARGET = new Date("2027-01-24T00:00:00");
+
+function daysUntil(target: Date) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return Math.max(0, Math.round((target.getTime() - today.getTime()) / 86400000));
+}
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -73,16 +82,70 @@ function Dashboard() {
 
   const streakActive = streak.lastDate === today || (streak.lastDate && diffDays(streak.lastDate, today) <= 1);
 
+  const daysLeft = daysUntil(JEE_TARGET);
+  const totalChapters = progress.physics.total + progress.chemistry.total + progress.math.total;
+  const doneChapters = progress.physics.done + progress.chemistry.done + progress.math.done;
+
   return (
     <div className="space-y-6">
-      <section>
-        <p className="text-xs uppercase tracking-widest text-muted-foreground">
-          {new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}
-        </p>
-        <h1 className="mt-1 text-3xl font-semibold md:text-4xl">Today&rsquo;s focus</h1>
+      <section className="flex items-baseline justify-between">
+        <div>
+          <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+            {new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}
+          </p>
+          <h1 className="mt-1 text-3xl font-semibold md:text-4xl">Mission Control</h1>
+        </div>
+        {streakActive && (
+          <div className="flex items-center gap-1.5 rounded-full border border-warning/30 bg-warning/10 px-2.5 py-1 text-xs font-medium text-warning">
+            <Flame className="h-3.5 w-3.5" />
+            <span className="stat-num">{streak.count}</span>
+            <span className="text-muted-foreground">day streak</span>
+          </div>
+        )}
       </section>
 
-      <Card className="overflow-hidden border-border/60 bg-gradient-to-br from-card to-accent/40 p-5">
+      {/* ============ Hero: JEE Countdown ============ */}
+      <Card className="surface-elevated relative overflow-hidden p-6 md:p-8">
+        <div className="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full bg-primary/15 blur-3xl" />
+        <div className="pointer-events-none absolute -left-24 bottom-0 h-56 w-56 rounded-full bg-secondary/10 blur-3xl" />
+        <div className="relative grid gap-6 md:grid-cols-[1.2fr_1fr] md:items-center">
+          <div>
+            <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+              JEE Main 2027
+            </p>
+            <div className="mt-2 flex items-baseline gap-3">
+              <span className="stat-num text-6xl font-semibold text-foreground md:text-7xl">
+                {daysLeft}
+              </span>
+              <span className="text-sm text-muted-foreground">days remaining</span>
+            </div>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Every focused day compounds. Make today count.
+            </p>
+            <div className="mt-5 flex flex-wrap items-center gap-2">
+              <Button asChild size="lg" className="rounded-xl">
+                <Link to="/study">
+                  <Play className="h-4 w-4" /> Start focus session
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="lg" className="rounded-xl">
+                <Link to="/planner">
+                  Plan today <ArrowRight className="h-4 w-4" />
+                </Link>
+              </Button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-3 md:gap-4">
+            <GoalTile value="5" unit="hrs" label="Study" />
+            <GoalTile value={String(Math.max(0, 3 - 0))} unit="left" label="Chapters" />
+            <GoalTile value="1" unit="set" label="Revision" />
+          </div>
+        </div>
+      </Card>
+
+      {/* ============ Daily Target ============ */}
+      <Card className="surface overflow-hidden p-5">
         {current.text ? (
           <div className="flex items-start gap-4">
             <button
@@ -91,7 +154,7 @@ function Dashboard() {
               aria-label="Toggle target"
             >
               {current.done ? (
-                <CheckCircle2 className="h-7 w-7 text-[var(--chemistry)]" />
+                <CheckCircle2 className="h-7 w-7 text-success" />
               ) : (
                 <Circle className="h-7 w-7 text-muted-foreground" />
               )}
@@ -115,7 +178,7 @@ function Dashboard() {
           </div>
         ) : (
           <div>
-            <div className="flex items-center gap-2 text-[11px] uppercase tracking-widest text-muted-foreground">
+            <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
               <Sparkles className="h-3.5 w-3.5" /> Set today&rsquo;s target
             </div>
             <form
@@ -137,22 +200,21 @@ function Dashboard() {
         )}
       </Card>
 
+      {/* ============ Quick Stats ============ */}
       <section className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <StatCard
-          icon={<Flame className={`h-5 w-5 ${streakActive ? "text-orange-400" : "text-muted-foreground"}`} />}
-          label="Streak"
-          value={`${streak.count}d`}
-          sub={streakActive ? "Active" : "Resume today"}
-        />
         <StatCard label="Overall" value={`${overall}%`} sub="syllabus" />
-        <StatCard label="Chapters" value={`${progress.physics.done + progress.chemistry.done + progress.math.done}`} sub={`of ${progress.physics.total + progress.chemistry.total + progress.math.total}`} />
+        <StatCard label="Chapters" value={`${doneChapters}`} sub={`of ${totalChapters}`} />
+        <StatCard label="Streak" value={`${streak.count}d`} sub={streakActive ? "Active" : "Restart"} />
         <StatCard label="Today" value={current.done ? "Done" : "Open"} sub={current.text ? "Target set" : "No target"} />
       </section>
 
-      <Card className="p-5">
-        <div className="mb-4 flex items-baseline justify-between">
-          <h2 className="text-lg font-semibold">Subject progress</h2>
-          <span className="text-xs text-muted-foreground">All chapters fully done</span>
+      {/* ============ Subject Progress ============ */}
+      <Card className="surface p-5">
+        <div className="mb-5 flex items-baseline justify-between">
+          <h2 className="font-display text-lg font-semibold">Subject readiness</h2>
+          <Link to="/syllabus" className="text-xs text-primary hover:underline">
+            View syllabus →
+          </Link>
         </div>
         <div className="grid grid-cols-3 gap-2">
           {SYLLABUS.map((s) => {
@@ -174,15 +236,24 @@ function Dashboard() {
   );
 }
 
-function StatCard({ icon, label, value, sub }: { icon?: React.ReactNode; label: string; value: string; sub?: string }) {
+function StatCard({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
-    <Card className="p-3">
-      <div className="flex items-center gap-2 text-[11px] uppercase tracking-widest text-muted-foreground">
-        {icon}
+    <Card className="surface p-3 transition-transform hover:-translate-y-0.5">
+      <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
         {label}
       </div>
-      <div className="mt-1.5 font-display text-xl font-semibold">{value}</div>
+      <div className="stat-num mt-1.5 text-xl font-semibold text-foreground">{value}</div>
       {sub && <div className="text-[11px] text-muted-foreground">{sub}</div>}
     </Card>
+  );
+}
+
+function GoalTile({ value, unit, label }: { value: string; unit: string; label: string }) {
+  return (
+    <div className="rounded-xl border border-border bg-background/40 p-3 text-center">
+      <div className="stat-num text-2xl font-semibold text-foreground">{value}</div>
+      <div className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">{unit}</div>
+      <div className="mt-1 text-[11px] font-medium text-foreground/80">{label}</div>
+    </div>
   );
 }

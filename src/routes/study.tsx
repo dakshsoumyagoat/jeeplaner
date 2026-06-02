@@ -194,24 +194,22 @@ function StudyPage() {
       </section>
 
       {/* ---------- Timer ---------- */}
-      <Card className="glass-panel relative overflow-hidden p-6">
-        <div className="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full bg-primary/20 blur-3xl" />
-        <div className="pointer-events-none absolute -left-16 -bottom-16 h-48 w-48 rounded-full bg-[var(--math)]/15 blur-3xl" />
-        <div className="relative grid gap-6 md:grid-cols-[1fr,auto] md:items-center">
-          <div>
-            <div className="text-[11px] uppercase tracking-widest text-muted-foreground">
-              {active ? (active.runStart ? "Running" : "Paused") : "Ready"} ·{" "}
-              {active?.subject ?? selectedSubject}
-            </div>
-            <div
-              className={`mt-2 font-display text-6xl font-semibold tabular-nums tracking-tight md:text-7xl ${
-                active?.runStart ? "text-foreground" : "text-foreground/90"
-              }`}
-            >
-              {formatHMS(elapsed)}
-            </div>
+      <Card className="surface-elevated relative overflow-hidden p-8 md:p-12">
+        <div
+          className={`pointer-events-none absolute left-1/2 top-1/2 h-[420px] w-[420px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/10 blur-3xl ${active?.runStart ? "breathe" : ""}`}
+        />
+        <div className="relative flex flex-col items-center text-center">
+          <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+            {active ? (active.runStart ? "Running" : "Paused") : "Ready"}
+          </div>
+          <div className="mt-1 text-sm font-medium text-foreground/90">
+            {active?.subject ?? selectedSubject}
+          </div>
+          <div className="stat-num mt-6 text-7xl font-semibold tracking-tight text-foreground md:text-8xl">
+            {formatHMS(elapsed)}
+          </div>
             {!active && (
-              <div className="mt-4 flex flex-wrap items-center gap-2">
+              <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
                 <Label className="text-xs text-muted-foreground">Subject</Label>
                 <Select value={selectedSubject} onValueChange={setSelectedSubject}>
                   <SelectTrigger className="w-48">
@@ -234,27 +232,26 @@ function StudyPage() {
                 />
               </div>
             )}
-          </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-2">
             {!active && (
-              <Button size="lg" onClick={start} className="hover-scale">
+              <Button size="lg" onClick={start} className="rounded-xl px-8">
                 <Play className="h-4 w-4" /> Start
               </Button>
             )}
             {active?.runStart && (
-              <Button size="lg" variant="secondary" onClick={pause} className="hover-scale">
+              <Button size="lg" variant="outline" onClick={pause} className="rounded-xl px-8">
                 <Pause className="h-4 w-4" /> Pause
               </Button>
             )}
             {active && !active.runStart && (
-              <Button size="lg" onClick={resume} className="hover-scale">
+              <Button size="lg" onClick={resume} className="rounded-xl px-8">
                 <Play className="h-4 w-4" /> Resume
               </Button>
             )}
             {active && (
-              <Button size="lg" variant="destructive" onClick={stop} className="hover-scale">
-                <Square className="h-4 w-4" /> Stop
+              <Button size="lg" variant="destructive" onClick={stop} className="rounded-xl px-8">
+                <Square className="h-4 w-4" /> Finish
               </Button>
             )}
           </div>
