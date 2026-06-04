@@ -51,7 +51,8 @@ function Dashboard() {
   });
   const [draft, setDraft] = useState("");
 
-  const current: DailyTarget = target.date === today ? target : { text: "", done: false, date: today };
+  const current: DailyTarget =
+    target.date === today ? target : { text: "", done: false, date: today };
 
   const progress = useMemo(
     () => ({
@@ -87,7 +88,8 @@ function Dashboard() {
     }
   };
 
-  const streakActive = streak.lastDate === today || (streak.lastDate && diffDays(streak.lastDate, today) <= 1);
+  const streakActive =
+    streak.lastDate === today || (streak.lastDate && diffDays(streak.lastDate, today) <= 1);
 
   const daysLeft = daysUntil(JEE_TARGET);
   const totalChapters = progress.physics.total + progress.chemistry.total + progress.math.total;
@@ -211,8 +213,16 @@ function Dashboard() {
       <section className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <StatCard label="Overall" value={`${overall}%`} sub="syllabus" />
         <StatCard label="Chapters" value={`${doneChapters}`} sub={`of ${totalChapters}`} />
-        <StatCard label="Streak" value={`${streak.count}d`} sub={streakActive ? "Active" : "Restart"} />
-        <StatCard label="Today" value={current.done ? "Done" : "Open"} sub={current.text ? "Target set" : "No target"} />
+        <StatCard
+          label="Streak"
+          value={`${streak.count}d`}
+          sub={streakActive ? "Active" : "Restart"}
+        />
+        <StatCard
+          label="Today"
+          value={current.done ? "Done" : "Open"}
+          sub={current.text ? "Target set" : "No target"}
+        />
       </section>
 
       {/* ============ Subject Progress ============ */}
@@ -246,9 +256,7 @@ function Dashboard() {
 function StatCard({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
     <Card className="surface p-3 transition-transform hover:-translate-y-0.5">
-      <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-        {label}
-      </div>
+      <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">{label}</div>
       <div className="stat-num mt-1.5 text-xl font-semibold text-foreground">{value}</div>
       {sub && <div className="text-[11px] text-muted-foreground">{sub}</div>}
     </Card>
