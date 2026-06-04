@@ -150,5 +150,4 @@
 @layer utilities {
   .animate-float-in { animation: float-in 220ms ease-out both; }
   .font-mono-num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
-  }
 }
