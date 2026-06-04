@@ -4,14 +4,16 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useRouterState,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import appCss from "../styles.css?url";
 import { AppShell } from "@/components/app/AppShell";
 import { Toaster } from "@/components/ui/sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 function NotFoundComponent() {
   return (
@@ -121,6 +123,10 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const router = useRouter();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const [authChecked, setAuthChecked] = useState(false);
+  const [signedIn, setSignedIn] = useState(false);
 
   // Inject the PWA manifest only outside the Lovable preview iframe.
   // The preview URL is auth-gated by a query token that the browser strips
@@ -144,6 +150,48 @@ function RootComponent() {
     link.href = "/manifest.webmanifest";
     document.head.appendChild(link);
   }, []);
+
+  // Auth state listener + initial session check.
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
+      setSignedIn(!!session);
+      setAuthChecked(true);
+      router.invalidate();
+    });
+    supabase.auth.getSession().then(({ data }) => {
+      setSignedIn(!!data.session);
+      setAuthChecked(true);
+    });
+    return () => subscription.unsubscribe();
+  }, [router]);
+
+  // Redirect unauthenticated users to /auth (except when already there).
+  useEffect(() => {
+    if (!authChecked) return;
+    if (!signedIn && pathname !== "/auth") {
+      router.navigate({ to: "/auth", replace: true });
+    }
+  }, [authChecked, signedIn, pathname, router]);
+
+  // Render the auth page bare (no AppShell chrome).
+  if (pathname === "/auth") {
+    return (
+      <QueryClientProvider client={queryClient}>
+        <Outlet />
+        <Toaster />
+      </QueryClientProvider>
+    );
+  }
+
+  // Avoid flashing the app for unauthenticated users before redirect lands.
+  if (authChecked && !signedIn) {
+    return (
+      <QueryClientProvider client={queryClient}>
+        <div className="min-h-screen bg-background" />
+        <Toaster />
+      </QueryClientProvider>
+    );
+  }
 
   return (
     <QueryClientProvider client={queryClient}>
