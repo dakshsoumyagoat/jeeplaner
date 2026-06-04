@@ -48,37 +48,37 @@
 
 :root {
   --radius: 0.875rem;
-  --background: #0B0F14;
+  --background: #09090b;
   --foreground: #F8FAFC;
-  --surface: #111827;
-  --elevated: #161F2E;
-  --card: #111827;
+  --surface: #18181b;
+  --elevated: #1f1f23;
+  --card: #18181b;
   --card-foreground: #F8FAFC;
-  --popover: #161F2E;
+  --popover: #1f1f23;
   --popover-foreground: #F8FAFC;
-  --primary: #4F8CFF;
-  --primary-foreground: #0B0F14;
-  --secondary: #7C4DFF;
+  --primary: #22d3ee;
+  --primary-foreground: #09090b;
+  --secondary: #a855f7;
   --secondary-foreground: #F8FAFC;
-  --muted: #161F2E;
-  --muted-foreground: #94A3B8;
-  --accent: #161F2E;
+  --muted: #27272a;
+  --muted-foreground: #a1a1aa;
+  --accent: #27272a;
   --accent-foreground: #F8FAFC;
-  --success: #22C55E;
-  --warning: #F59E0B;
-  --destructive: #EF4444;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --destructive: #ef4444;
   --destructive-foreground: #F8FAFC;
-  --border: rgba(255, 255, 255, 0.08);
-  --input: rgba(255, 255, 255, 0.10);
-  --ring: #4F8CFF;
-  --physics: #4F8CFF;
-  --chemistry: #22C55E;
-  --math: #7C4DFF;
-  --chart-1: #4F8CFF;
-  --chart-2: #22C55E;
-  --chart-3: #7C4DFF;
-  --chart-4: #F59E0B;
-  --chart-5: #EF4444;
+  --border: #27272a;
+  --input: #27272a;
+  --ring: #22d3ee;
+  --physics: #22d3ee;
+  --chemistry: #10d9a0;
+  --math: #a855f7;
+  --chart-1: #22d3ee;
+  --chart-2: #10d9a0;
+  --chart-3: #a855f7;
+  --chart-4: #f59e0b;
+  --chart-5: #ef4444;
 }
 
 @layer base {
@@ -120,6 +120,21 @@
   .breathe {
     animation: breathe 4s ease-in-out infinite;
   }
+  .glow-cyan {
+    box-shadow: 0 0 0 1px rgba(34, 211, 238, 0.25), 0 0 24px -4px rgba(34, 211, 238, 0.35);
+  }
+  .glow-emerald {
+    box-shadow: 0 0 0 1px rgba(16, 217, 160, 0.25), 0 0 24px -4px rgba(16, 217, 160, 0.35);
+  }
+  .glow-violet {
+    box-shadow: 0 0 0 1px rgba(168, 85, 247, 0.25), 0 0 24px -4px rgba(168, 85, 247, 0.35);
+  }
+  .hairline {
+    border: 1px solid #27272a;
+  }
+  .text-glow-cyan { text-shadow: 0 0 18px rgba(34, 211, 238, 0.55); }
+  .text-glow-emerald { text-shadow: 0 0 18px rgba(16, 217, 160, 0.55); }
+  .text-glow-violet { text-shadow: 0 0 18px rgba(168, 85, 247, 0.55); }
 }
 
 @keyframes breathe {

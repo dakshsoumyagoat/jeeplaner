@@ -130,7 +130,7 @@ function isActive(path: string, to: string) {
 
 function Logo() {
   return (
-    <div className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-primary to-secondary font-display text-sm font-bold text-primary-foreground shadow-[0_4px_18px_-6px_rgba(79,140,255,0.55)]">
+    <div className="grid h-9 w-9 place-items-center rounded-lg border border-primary/40 bg-zinc-950 font-mono text-[11px] font-bold text-primary shadow-[0_0_18px_-2px_rgba(34,211,238,0.5)]">
       JS
     </div>
   );
