@@ -91,7 +91,7 @@ function Dashboard() {
       <section className="flex items-baseline justify-between">
         <div>
           <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-            {new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}
+            {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
           </p>
           <h1 className="mt-1 text-3xl font-semibold md:text-4xl">Mission Control</h1>
         </div>
