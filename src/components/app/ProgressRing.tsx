@@ -14,12 +14,12 @@ export function ProgressRing({ pct, label, sub, color, size = 120 }: Props) {
   return (
     <div className="flex flex-col items-center gap-2">
       <div className="relative" style={{ width: size, height: size }}>
-        <svg width={size} height={size} className="-rotate-90">
+        <svg width={size} height={size} className="-rotate-90" style={{ filter: `drop-shadow(0 0 8px ${color}55)` }}>
           <circle
             cx={size / 2}
             cy={size / 2}
             r={r}
-            stroke="var(--muted)"
+            stroke="#27272a"
             strokeWidth={stroke}
             fill="none"
           />
@@ -38,12 +38,12 @@ export function ProgressRing({ pct, label, sub, color, size = 120 }: Props) {
         </svg>
         <div className="absolute inset-0 grid place-items-center">
           <div className="text-center">
-            <div className="font-display text-2xl font-semibold">{pct}%</div>
+            <div className="stat-num text-2xl font-semibold" style={{ color }}>{pct}%</div>
             {sub && <div className="text-[10px] text-muted-foreground">{sub}</div>}
           </div>
         </div>
       </div>
-      <div className="text-sm font-medium" style={{ color }}>
+      <div className="font-display text-xs font-semibold uppercase tracking-[0.18em]" style={{ color }}>
         {label}
       </div>
     </div>
