@@ -8,23 +8,15 @@ import { usePersisted } from "@/lib/storage";
 import { SYLLABUS } from "@/data/syllabus";
 import { subjectProgress, todayKey, diffDays } from "@/lib/progress";
 import type { DailyTarget, StreakState, SyllabusState } from "@/lib/types";
-import { Flame, CheckCircle2, Circle, Sparkles, Play, ArrowRight } from "lucide-react";
+import { Flame, CheckCircle2, Circle, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
-// JEE Main 2027 — first session typically late January
-const JEE_TARGET = new Date("2027-01-24T00:00:00");
 const DATE_FORMATTER = new Intl.DateTimeFormat("en-US", {
   weekday: "long",
   month: "long",
   day: "numeric",
   timeZone: "UTC",
 });
-
-function daysUntil(target: Date) {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  return Math.max(0, Math.round((target.getTime() - today.getTime()) / 86400000));
-}
 
 export const Route = createFileRoute("/")({
   head: () => ({
