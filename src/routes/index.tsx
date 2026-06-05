@@ -83,7 +83,6 @@ function Dashboard() {
   const streakActive =
     streak.lastDate === today || (streak.lastDate && diffDays(streak.lastDate, today) <= 1);
 
-  const daysLeft = daysUntil(JEE_TARGET);
   const totalChapters = progress.physics.total + progress.chemistry.total + progress.math.total;
   const doneChapters = progress.physics.done + progress.chemistry.done + progress.math.done;
 
@@ -104,46 +103,6 @@ function Dashboard() {
           </div>
         )}
       </section>
-
-      {/* ============ Hero: JEE Countdown ============ */}
-      <Card className="surface-elevated relative overflow-hidden p-6 md:p-8">
-        <div className="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full bg-primary/15 blur-3xl" />
-        <div className="pointer-events-none absolute -left-24 bottom-0 h-56 w-56 rounded-full bg-secondary/10 blur-3xl" />
-        <div className="relative grid gap-6 md:grid-cols-[1.2fr_1fr] md:items-center">
-          <div>
-            <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
-              JEE Main 2027
-            </p>
-            <div className="mt-2 flex items-baseline gap-3">
-              <span className="stat-num text-6xl font-semibold text-foreground md:text-7xl">
-                {daysLeft}
-              </span>
-              <span className="text-sm text-muted-foreground">days remaining</span>
-            </div>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Every focused day compounds. Make today count.
-            </p>
-            <div className="mt-5 flex flex-wrap items-center gap-2">
-              <Button asChild size="lg" className="rounded-xl">
-                <Link to="/study">
-                  <Play className="h-4 w-4" /> Start focus session
-                </Link>
-              </Button>
-              <Button asChild variant="outline" size="lg" className="rounded-xl">
-                <Link to="/planner">
-                  Plan today <ArrowRight className="h-4 w-4" />
-                </Link>
-              </Button>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-3 gap-3 md:gap-4">
-            <GoalTile value="5" unit="hrs" label="Study" />
-            <GoalTile value={String(Math.max(0, 3 - 0))} unit="left" label="Chapters" />
-            <GoalTile value="1" unit="set" label="Revision" />
-          </div>
-        </div>
-      </Card>
 
       {/* ============ Daily Target ============ */}
       <Card className="surface overflow-hidden p-5">
