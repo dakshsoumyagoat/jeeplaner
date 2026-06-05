@@ -52,6 +52,10 @@ export type MockEntry = {
   math?: number;
   negatives: number;
   errors: { silly: number; conceptual: number; time: number; unattempted: number };
+  /** Optional link to a scheduled test from src/data/testSchedule.ts */
+  scheduleId?: string;
+  /** Optional display name (from schedule) */
+  name?: string;
 };
 
 export type StreakState = {
