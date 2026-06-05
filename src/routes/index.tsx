@@ -214,12 +214,3 @@ function StatCard({ label, value, sub }: { label: string; value: string; sub?: s
   );
 }
 
-function GoalTile({ value, unit, label }: { value: string; unit: string; label: string }) {
-  return (
-    <div className="rounded-xl border border-border bg-background/40 p-3 text-center">
-      <div className="stat-num text-2xl font-semibold text-foreground">{value}</div>
-      <div className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">{unit}</div>
-      <div className="mt-1 text-[11px] font-medium text-foreground/80">{label}</div>
-    </div>
-  );
-}
