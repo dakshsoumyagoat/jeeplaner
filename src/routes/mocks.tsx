@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +15,7 @@ import {
 import { usePersisted } from "@/lib/storage";
 import type { MockEntry, MockType, WeeklySubject } from "@/lib/types";
 import { todayKey } from "@/lib/progress";
+import { TEST_SCHEDULE, type ScheduledTest } from "@/data/testSchedule";
 import {
   LineChart,
   Line,
@@ -26,8 +27,9 @@ import {
   BarChart,
   Bar,
   Cell,
+  ReferenceLine,
 } from "recharts";
-import { Trash2 } from "lucide-react";
+import { Trash2, CalendarClock, CheckCircle2, Circle } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/mocks")({
@@ -67,18 +69,23 @@ const emptyDraft = (type: MockType): Omit<MockEntry, "id"> => ({
 
 function MocksPage() {
   const [mocks, setMocks] = usePersisted<MockEntry[]>("mocks-v2", []);
-  const [tab, setTab] = useState<MockType>("weekly");
+  const [tab, setTab] = useState<MockType | "schedule">("weekly");
+  const [prefill, setPrefill] = useState<ScheduledTest | null>(null);
 
   const remove = (id: string) => setMocks((prev) => prev.filter((m) => m.id !== id));
-
-  const filtered = useMemo(
-    () => mocks.filter((m) => m.type === tab).sort((a, b) => a.date.localeCompare(b.date)),
-    [mocks, tab],
-  );
 
   const addEntry = (entry: MockEntry) => {
     setMocks((prev) => [...prev, entry].sort((a, b) => a.date.localeCompare(b.date)));
     toast.success(`${MOCK_META[entry.type].label} logged.`);
+  };
+
+  const logScheduled = (s: ScheduledTest) => {
+    if (s.type === "exam") {
+      toast.info("Multi-day exam window — log individual papers instead.");
+      return;
+    }
+    setPrefill(s);
+    setTab(s.type);
   };
 
   return (
@@ -90,34 +97,83 @@ function MocksPage() {
         </p>
       </header>
 
-      <Tabs value={tab} onValueChange={(v) => setTab(v as MockType)}>
-        <TabsList className="grid w-full grid-cols-3">
+      <Tabs value={tab} onValueChange={(v) => setTab(v as MockType | "schedule")}>
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="weekly">Weekly Test</TabsTrigger>
           <TabsTrigger value="mains">JEE Mains</TabsTrigger>
           <TabsTrigger value="advanced">JEE Advanced</TabsTrigger>
+          <TabsTrigger value="schedule">Schedule</TabsTrigger>
         </TabsList>
 
         {(["weekly", "mains", "advanced"] as MockType[]).map((type) => (
           <TabsContent key={type} value={type} className="mt-6 space-y-6">
-            <MockForm type={type} onSubmit={addEntry} />
-            <Analytics entries={filtered.filter((m) => m.type === type)} type={type} onRemove={remove} />
+            <MockForm
+              type={type}
+              onSubmit={addEntry}
+              prefill={prefill && prefill.type === type ? prefill : null}
+              onPrefillConsumed={() => setPrefill(null)}
+            />
+            <Analytics
+              entries={mocks.filter((m) => m.type === type).sort((a, b) => a.date.localeCompare(b.date))}
+              type={type}
+              onRemove={remove}
+            />
           </TabsContent>
         ))}
+
+        <TabsContent value="schedule" className="mt-6 space-y-6">
+          <ScheduleView mocks={mocks} onLog={logScheduled} />
+        </TabsContent>
       </Tabs>
     </div>
   );
 }
 
-function MockForm({ type, onSubmit }: { type: MockType; onSubmit: (e: MockEntry) => void }) {
+function MockForm({
+  type,
+  onSubmit,
+  prefill,
+  onPrefillConsumed,
+}: {
+  type: MockType;
+  onSubmit: (e: MockEntry) => void;
+  prefill: ScheduledTest | null;
+  onPrefillConsumed: () => void;
+}) {
   const [draft, setDraft] = useState(emptyDraft(type));
+  const [scheduleId, setScheduleId] = useState<string | undefined>();
+
+  // Apply prefill when arriving from the Schedule tab
+  useEffect(() => {
+    if (prefill && prefill.type === type) {
+      setDraft((d) => ({
+        ...d,
+        date: prefill.date,
+        subject: prefill.subject ?? d.subject,
+      }));
+      setScheduleId(prefill.id);
+      onPrefillConsumed();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [prefill?.id]);
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit({ ...draft, type, id: crypto.randomUUID() });
+    const linked = scheduleId ? TEST_SCHEDULE.find((s) => s.id === scheduleId) : null;
+    onSubmit({
+      ...draft,
+      type,
+      id: crypto.randomUUID(),
+      scheduleId,
+      name: linked?.name,
+    });
     setDraft(emptyDraft(type));
+    setScheduleId(undefined);
   };
 
   const meta = MOCK_META[type];
+
+  const scheduleOptions = TEST_SCHEDULE.filter((s) => s.type === type);
 
   return (
     <Card className="p-5">
@@ -126,6 +182,34 @@ function MockForm({ type, onSubmit }: { type: MockType; onSubmit: (e: MockEntry)
         <span className="text-xs text-muted-foreground">Max marks: {meta.maxMarks}</span>
       </div>
       <form onSubmit={submit} className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <Field label="Scheduled test">
+          <Select
+            value={scheduleId ?? "__none"}
+            onValueChange={(v) => {
+              if (v === "__none") {
+                setScheduleId(undefined);
+                return;
+              }
+              const s = TEST_SCHEDULE.find((x) => x.id === v);
+              if (!s) return;
+              setScheduleId(s.id);
+              setDraft((d) => ({ ...d, date: s.date, subject: s.subject ?? d.subject }));
+            }}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Pick from schedule" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__none">Custom / unscheduled</SelectItem>
+              {scheduleOptions.map((s) => (
+                <SelectItem key={s.id} value={s.id}>
+                  {s.name} · {s.date.slice(5)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </Field>
+
         <Field label="Date">
           <Input
             type="date"
@@ -261,6 +345,15 @@ function Analytics({
                     fontSize: 12,
                   }}
                 />
+                {TEST_SCHEDULE.filter((s) => s.type === type).map((s) => (
+                  <ReferenceLine
+                    key={s.id}
+                    x={s.date.slice(5)}
+                    stroke="var(--border)"
+                    strokeDasharray="2 4"
+                    label={{ value: "•", position: "top", fill: "var(--muted-foreground)", fontSize: 10 }}
+                  />
+                ))}
                 <Line type="monotone" dataKey="Total" stroke="var(--primary)" strokeWidth={2.5} dot={{ r: 3 }} />
                 {type !== "weekly" && (
                   <>
@@ -379,5 +472,110 @@ function NumField({
         onChange={(e) => onChange(Number(e.target.value) || 0)}
       />
     </Field>
+  );
+}
+
+function ScheduleView({
+  mocks,
+  onLog,
+}: {
+  mocks: MockEntry[];
+  onLog: (s: ScheduledTest) => void;
+}) {
+  const today = todayKey();
+  const loggedByScheduleId = useMemo(() => {
+    const map = new Map<string, MockEntry>();
+    for (const m of mocks) if (m.scheduleId) map.set(m.scheduleId, m);
+    return map;
+  }, [mocks]);
+
+  const upcoming = TEST_SCHEDULE.filter((s) => s.date >= today);
+  const past = TEST_SCHEDULE.filter((s) => s.date < today).reverse();
+
+  return (
+    <>
+      <Card className="p-5">
+        <div className="mb-4 flex items-center gap-2">
+          <CalendarClock className="h-4 w-4 text-primary" />
+          <h2 className="text-lg font-semibold">Upcoming tests</h2>
+          <span className="ml-auto text-xs text-muted-foreground">{upcoming.length} scheduled</span>
+        </div>
+        {upcoming.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No upcoming tests on the calendar.</p>
+        ) : (
+          <ul className="space-y-2">
+            {upcoming.map((s) => (
+              <ScheduleRow key={s.id} s={s} logged={loggedByScheduleId.get(s.id)} onLog={onLog} />
+            ))}
+          </ul>
+        )}
+      </Card>
+
+      <Card className="p-5">
+        <h2 className="mb-4 text-lg font-semibold">Past tests</h2>
+        {past.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No past tests yet.</p>
+        ) : (
+          <ul className="space-y-2">
+            {past.map((s) => (
+              <ScheduleRow key={s.id} s={s} logged={loggedByScheduleId.get(s.id)} onLog={onLog} />
+            ))}
+          </ul>
+        )}
+      </Card>
+    </>
+  );
+}
+
+function ScheduleRow({
+  s,
+  logged,
+  onLog,
+}: {
+  s: ScheduledTest;
+  logged?: MockEntry;
+  onLog: (s: ScheduledTest) => void;
+}) {
+  const typeColor: Record<string, string> = {
+    weekly: "text-physics border-physics/40",
+    mains: "text-primary border-primary/40",
+    advanced: "text-math border-math/40",
+    exam: "text-chemistry border-chemistry/40",
+  };
+  return (
+    <li className="flex items-center justify-between gap-3 rounded-lg border border-border/50 p-3 text-sm">
+      <div className="flex min-w-0 items-center gap-3">
+        {logged ? (
+          <CheckCircle2 className="h-4 w-4 shrink-0 text-primary" />
+        ) : (
+          <Circle className="h-4 w-4 shrink-0 text-muted-foreground" />
+        )}
+        <div className="min-w-0">
+          <div className="truncate font-medium">{s.name}</div>
+          <div className="text-xs text-muted-foreground">
+            {s.date}
+            {s.endDate ? ` → ${s.endDate}` : ""}
+            {s.maxMarks ? ` · /${s.maxMarks}` : ""}
+          </div>
+        </div>
+      </div>
+      <div className="flex items-center gap-2">
+        <span
+          className={`rounded-md border px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider ${typeColor[s.type]}`}
+        >
+          {s.type}
+        </span>
+        {logged ? (
+          <span className="font-display text-sm font-semibold">
+            {logged.total}
+            <span className="text-xs font-normal text-muted-foreground">/{logged.maxMarks}</span>
+          </span>
+        ) : s.type !== "exam" ? (
+          <Button size="sm" variant="outline" onClick={() => onLog(s)}>
+            Log
+          </Button>
+        ) : null}
+      </div>
+    </li>
   );
 }
