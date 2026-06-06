@@ -8,7 +8,7 @@ import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 const fallbackSupabaseUrl = "https://fpxshehlhadqwvynvydr.supabase.co";
 const fallbackSupabasePublishableKey =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJIUzI1NiIsInJlZiI6ImZweHNoZWhsaGFkcXd2eW52eWRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1NzIyODIsImV4cCI6MjA5NjE0ODI4Mn0.Pn5kDaCa2AWxLo8fbt_WmQ4jCgoI1VEKHl28zuNAaqY";
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZweHNoZWhsaGFkcXd2eW52eWRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1NzIyODIsImV4cCI6MjA5NjE0ODI4Mn0.Pn5kDaCa2AWxLo8fbt_WmQ4jCgoI1VEKHl28zuNAaqY";
 
 const supabaseUrl =
   process.env.VITE_SUPABASE_URL ?? process.env.SUPABASE_URL ?? fallbackSupabaseUrl;
