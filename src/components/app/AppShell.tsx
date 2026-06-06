@@ -1,7 +1,10 @@
 import { Link, Outlet, useRouterState, useNavigate } from "@tanstack/react-router";
-import { Home, BookOpen, CalendarDays, Timer, BarChart3, Plus, Play, ListPlus, ClipboardList, Clock } from "lucide-react";
+import { Home, BookOpen, CalendarDays, Timer, BarChart3, Plus, Play, ListPlus, ClipboardList, Clock, LogOut } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import logoAsset from "@/assets/logo.png.asset.json";
 
 const NAV = [
   { to: "/", label: "Today", icon: Home },
@@ -22,16 +25,19 @@ export function AppShell() {
           <Link to="/" className="flex items-center gap-2">
             <Logo />
             <span className="font-display text-base font-semibold tracking-tight">
-              JEE Scholar
+              ROCKET
             </span>
           </Link>
-          <Link
-            to="/schedule"
-            className="rounded-md p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-            aria-label="School schedule"
-          >
-            <Clock className="h-4 w-4" />
-          </Link>
+          <div className="flex items-center gap-1">
+            <Link
+              to="/schedule"
+              className="rounded-md p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              aria-label="School schedule"
+            >
+              <Clock className="h-4 w-4" />
+            </Link>
+            <SignOutButton compact />
+          </div>
         </div>
       </header>
 
@@ -76,6 +82,7 @@ export function AppShell() {
           <Clock className="h-5 w-5" />
           <span>School</span>
         </Link>
+        <SignOutButton />
       </aside>
 
       <main className="mx-auto max-w-5xl px-4 pb-28 pt-6 md:pb-12 md:pl-[88px] md:pr-6">
@@ -130,9 +137,41 @@ function isActive(path: string, to: string) {
 
 function Logo() {
   return (
-    <div className="grid h-9 w-9 place-items-center rounded-lg border border-primary/40 bg-zinc-950 font-mono text-[11px] font-bold text-primary shadow-[0_0_18px_-2px_rgba(34,211,238,0.5)]">
-      JS
-    </div>
+    <img
+      src={logoAsset.url}
+      alt="ROCKET"
+      className="h-9 w-9 rounded-lg shadow-[0_0_18px_-4px_rgba(99,102,241,0.6)]"
+    />
+  );
+}
+
+function SignOutButton({ compact = false }: { compact?: boolean }) {
+  const navigate = useNavigate();
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    toast.success("Signed out");
+    navigate({ to: "/auth", replace: true });
+  };
+  if (compact) {
+    return (
+      <button
+        onClick={handleSignOut}
+        className="rounded-md p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+        aria-label="Sign out"
+      >
+        <LogOut className="h-4 w-4" />
+      </button>
+    );
+  }
+  return (
+    <button
+      onClick={handleSignOut}
+      title="Sign out"
+      className="mt-2 flex w-14 flex-col items-center gap-1 rounded-xl px-1 py-2 text-[10px] font-medium text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
+    >
+      <LogOut className="h-5 w-5" />
+      <span>Sign out</span>
+    </button>
   );
 }
 
