@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,7 @@ import { subjectProgress, todayKey, diffDays } from "@/lib/progress";
 import type { DailyTarget, StreakState, SyllabusState } from "@/lib/types";
 import { Flame, CheckCircle2, Circle, Sparkles } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const DATE_FORMATTER = new Intl.DateTimeFormat("en-US", {
   weekday: "long",
@@ -31,6 +32,20 @@ export const Route = createFileRoute("/")({
 function Dashboard() {
   const today = todayKey();
   const todayLabel = DATE_FORMATTER.format(new Date(`${today}T00:00:00Z`));
+  const [displayName, setDisplayName] = useState<string>("");
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      const u = data.user;
+      if (!u) return;
+      const meta = (u.user_metadata ?? {}) as Record<string, unknown>;
+      const name =
+        (typeof meta.full_name === "string" && meta.full_name) ||
+        (typeof meta.name === "string" && meta.name) ||
+        (typeof meta.username === "string" && meta.username) ||
+        (u.email ? u.email.split("@")[0] : "");
+      setDisplayName(String(name).split(" ")[0]);
+    });
+  }, []);
   const [syllabus] = usePersisted<SyllabusState>("syllabus-state", {});
   const [target, setTarget] = usePersisted<DailyTarget>("daily-target", {
     text: "",
@@ -93,7 +108,9 @@ function Dashboard() {
           <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
             {todayLabel}
           </p>
-          <h1 className="mt-1 text-3xl font-semibold md:text-4xl">Mission Control</h1>
+          <h1 className="mt-1 text-3xl font-semibold md:text-4xl">
+            {displayName ? `Hi, ${displayName}` : "Mission Control"}
+          </h1>
         </div>
         {streakActive && (
           <div className="flex items-center gap-1.5 rounded-full border border-warning/30 bg-warning/10 px-2.5 py-1 text-xs font-medium text-warning">
